@@ -19,6 +19,15 @@ class ConfigurationTest < Minitest::Test
                         "description" => "You are north of the beach landing.",
                         "to" => ["beach"]
                     }
+                },
+            "items" =>
+                {
+                    "rusty_sword" => {
+                        "name" => "Rusty old sword",
+                        "description" => "It looks like this sword has been lying in the sand for a long time. It's very rusty.",
+                        "type" => "weapon",
+                        "damage" => 1
+                    }
                 }
         }
 
@@ -38,11 +47,37 @@ class ConfigurationTest < Minitest::Test
     assert_equal "You are north of the beach landing.", config.locations['north_beach'].description
     assert_equal ["beach"], config.locations['north_beach'].destinations
 
+    assert config.items != nil
+    assert 1, config.items.size
+
+    assert_equal "rusty_sword", config.items['rusty_sword'].id
+    assert_equal "Rusty old sword", config.items['rusty_sword'].name
+    assert_equal "It looks like this sword has been lying in the sand for a long time. It's very rusty.", config.items['rusty_sword'].description
+    assert_equal 1, config.items['rusty_sword'].damage
+
   end
 
   def test_broken_destination
     assert_raises RuntimeError do
       Configuration.new.parse_dict({"locations" => {"beach" => {"name" => "name", "desciption" => "description", "to" => ["nowhere"]}}})
+    end
+  end
+
+  def test_empty_config
+    assert_raises RuntimeError do
+      Configuration.new.parse_dict({})
+      end
+  end
+
+  def test_empty_locations
+    assert_raises RuntimeError do
+      Configuration.new.parse_dict({"locations" => {}})
+    end
+  end
+
+  def test_empty_items
+    assert_raises RuntimeError do
+      Configuration.new.parse_dict({"items" => {}})
     end
   end
 
