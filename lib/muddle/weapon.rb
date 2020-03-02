@@ -1,8 +1,6 @@
-
-require_relative 'item'
+require_relative "item"
 
 class Weapon < Item
-
   def initialize(id, name, description, damage)
     @id = id
     @name = name
@@ -11,5 +9,4 @@ class Weapon < Item
   end
 
   attr_reader :id, :name, :description, :damage
-
 end

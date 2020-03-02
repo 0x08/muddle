@@ -1,5 +1,4 @@
 class NonPlayerCharacter
-
   attr_reader :name, :description, :hitpoints, :id
 
   def initialize(id, name, description, hitpoints)
@@ -8,5 +7,4 @@ class NonPlayerCharacter
     @description = description
     @hitpoints = hitpoints
   end
-
 end
