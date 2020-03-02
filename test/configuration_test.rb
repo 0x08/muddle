@@ -28,6 +28,14 @@ class ConfigurationTest < Minitest::Test
                         "type" => "weapon",
                         "damage" => 1
                     }
+                },
+            "npcs" =>
+                {
+                    "drunken_sailor" => {
+                        "name" => "Drunken sailor",
+                        "description" => "This sailor has obviously had a little too much rum.",
+                        "hitpoints" => 10
+                    }
                 }
         }
 
@@ -55,18 +63,26 @@ class ConfigurationTest < Minitest::Test
     assert_equal "It looks like this sword has been lying in the sand for a long time. It's very rusty.", config.items['rusty_sword'].description
     assert_equal 1, config.items['rusty_sword'].damage
 
+    assert config.npcs != nil
+    assert 1, config.npcs.size
+
+    assert_equal "drunken_sailor", config.npcs['drunken_sailor'].id
+    assert_equal "Drunken sailor", config.npcs['drunken_sailor'].name
+    assert_equal "This sailor has obviously had a little too much rum.", config.npcs['drunken_sailor'].description
+    assert_equal 10, config.npcs['drunken_sailor'].hitpoints
+
   end
 
   def test_broken_destination
     assert_raises RuntimeError do
-      Configuration.new.parse_dict({"locations" => {"beach" => {"name" => "name", "desciption" => "description", "to" => ["nowhere"]}}})
+      Configuration.new.parse_dict({"locations" => {"beach" => {"name" => "name", "description" => "description", "to" => ["nowhere"]}}})
     end
   end
 
   def test_empty_config
     assert_raises RuntimeError do
       Configuration.new.parse_dict({})
-      end
+    end
   end
 
   def test_empty_locations
@@ -78,6 +94,12 @@ class ConfigurationTest < Minitest::Test
   def test_empty_items
     assert_raises RuntimeError do
       Configuration.new.parse_dict({"items" => {}})
+    end
+  end
+
+  def test_empty_npcs
+    assert_raises RuntimeError do
+      Configuration.new.parse_dict({"npcs" => {}})
     end
   end
 

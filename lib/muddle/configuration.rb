@@ -3,14 +3,16 @@ require 'yaml'
 require 'logger'
 require_relative 'location'
 require_relative 'weapon'
+require_relative 'non_player_character'
 
 class Configuration
 
-  attr_reader :locations, :items
+  attr_reader :locations, :items, :npcs
 
   def initialize
     @locations = {}
     @items = {}
+    @npcs = {}
     @logger = Logger.new(STDOUT)
   end
 
@@ -18,8 +20,8 @@ class Configuration
     @logger.debug("loading configuration: #{config}")
     parse_locations(config['locations'])
     parse_items(config['items'])
+    parse_npcs(config['npcs'])
   end
-
 
   def parse(filename)
     parse_dict(YAML.load_file(filename))
@@ -62,6 +64,19 @@ class Configuration
           raise "unknown destination #{destination}"
         end
       end
+    end
+  end
+
+  def parse_npcs(npcs)
+    if npcs.nil? or npcs.length == 0
+      raise "npcs cannot be empty"
+    end
+    npcs.each do |id, npc|
+      name = npc['name']
+      description = npc['description']
+      hitpoints = npc['hitpoints']
+      n = NonPlayerCharacter.new(id, name, description, hitpoints)
+      @npcs[id] = n
     end
   end
 
