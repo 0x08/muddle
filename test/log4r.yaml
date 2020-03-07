@@ -1,0 +1,27 @@
+description: config file for log4r
+
+---
+log4r_config:
+  pre_config:
+    global:
+      level: DEBUG
+    root:
+      level: DEBUG
+
+  loggers:
+  - name: muddle
+    level: DEBUG
+    additive: 'false'
+    trace: 'false'
+    outputters:
+    - stderr
+
+  # define all outputters (incl. formatters)
+  outputters:
+  - type: StderrOutputter
+    name: stderr
+    level: INFO
+    formatter:
+      date_pattern: #'%y%m%d %H:%M:%S'
+      pattern: '[%c] %l: %m'
+      type: PatternFormatter

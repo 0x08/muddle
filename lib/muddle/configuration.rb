@@ -1,8 +1,8 @@
 require "yaml"
 require "logger"
-require_relative "location"
-require_relative "weapon"
-require_relative "non_player_character"
+require_relative "location/location"
+require_relative "item/weapon"
+require_relative "character/non_player_character"
 
 class Configuration
   attr_reader :locations, :items, :npcs
@@ -11,7 +11,7 @@ class Configuration
     @locations = {}
     @items = {}
     @npcs = {}
-    @logger = Logger.new(STDOUT)
+    @logger = Log4r::Logger["muddle"]
   end
 
   def parse_dict(config)
@@ -23,6 +23,12 @@ class Configuration
 
   def parse(filename)
     parse_dict(YAML.load_file(filename))
+  end
+
+  def find_location(id)
+    @locations.each do |location_id, location|
+      return location if location_id == id
+    end
   end
 
   private
@@ -73,7 +79,14 @@ class Configuration
       name = npc["name"]
       description = npc["description"]
       hitpoints = npc["hitpoints"]
-      n = NonPlayerCharacter.new(id, name, description, hitpoints)
+      if npc["location"].nil?
+        raise "missing npc location"
+      end
+      location = find_location(npc["location"])
+      if location.nil?
+        raise "unknown npc location #{npc["location"]}"
+      end
+      n = NonPlayerCharacter.new(id, name, description, hitpoints, location, self)
       @npcs[id] = n
     end
   end

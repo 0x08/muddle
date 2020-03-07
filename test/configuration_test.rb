@@ -1,5 +1,11 @@
 require "minitest/autorun"
+
+require "log4r"
+require "log4r/yamlconfigurator"
+
 require_relative "../lib/muddle/configuration"
+
+Log4r::YamlConfigurator.load_yaml_file("/etc/muddle/log4r.yaml")
 
 class ConfigurationTest < Minitest::Test
   def test_parse
@@ -30,6 +36,7 @@ class ConfigurationTest < Minitest::Test
             "name" => "Drunken sailor",
             "description" => "This sailor has obviously had a little too much rum.",
             "hitpoints" => 10,
+            "location" => "beach",
           },
         },
       }
@@ -94,6 +101,35 @@ class ConfigurationTest < Minitest::Test
   def test_empty_npcs
     assert_raises RuntimeError do
       Configuration.new.parse_dict({ "npcs" => {} })
+    end
+  end
+
+  def test_missing_location
+    assert_raises RuntimeError do
+      Configuration.new.parse_dict({
+        "locations" => {
+          "beach" => {
+            "name" => "name",
+            "description" => "description",
+            "to" => ["beach"],
+          },
+        },
+        "items" => {
+          "item" => {
+            "name" => "name",
+            "description" => "description",
+            "type" => "weapon",
+            "damage" => 1,
+          },
+        },
+        "npcs" => {
+          "npc" => {
+            "name" => "name",
+            "description" => "description",
+            "hitpoints" => 10,
+          },
+        },
+      })
     end
   end
 end
