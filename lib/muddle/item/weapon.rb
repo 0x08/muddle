@@ -2,9 +2,7 @@ require_relative "item"
 
 class Weapon < Item
   def initialize(id, name, description, damage)
-    @id = id
-    @name = name
-    @description = description
+    super(id, name, description)
     @damage = damage
   end
 

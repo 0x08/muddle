@@ -1,11 +1,7 @@
 require "minitest/autorun"
 
-require "log4r"
-require "log4r/yamlconfigurator"
-
 require_relative "../lib/muddle/configuration"
-
-Log4r::YamlConfigurator.load_yaml_file("/etc/muddle/log4r.yaml")
+require_relative "../lib/muddle/error/error"
 
 class ConfigurationTest < Minitest::Test
   def test_parse
@@ -16,6 +12,7 @@ class ConfigurationTest < Minitest::Test
             "name" => "The beach",
             "description" => "You are on a beach. There is an old, beached shipwreck here covered in barnacles.",
             "to" => ["north_beach"],
+            "items" => ["rusty_sword"],
           },
           "north_beach" => {
             "name" => "North beach",
@@ -75,32 +72,70 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_broken_destination
-    assert_raises RuntimeError do
-      Configuration.new.parse_dict({ "locations" => { "beach" => { "name" => "name", "description" => "description", "to" => ["nowhere"] } } })
+    assert_raises UnknownLocationError do
+      c = {
+        "items" => {
+          "item" => { "name" => "name", "description" => "description", "type" => "weapon", "damage" => 1 },
+        },
+        "locations" => {
+          "beach" => { "name" => "name", "description" => "description", "to" => ["nowhere"] },
+        },
+      }
+      Configuration.new.parse_dict(c)
+    end
+  end
+
+  def test_broken_item
+    assert_raises UnknownItemError do
+      c = {
+        "items" => {
+          "sword" => { "name" => "name", "description" => "description", "type" => "weapon", "damage" => 1 },
+        },
+        "locations" => {
+          "beach" => { "name" => "name", "description" => "description", "items" => ["axe"] },
+        },
+        "npcs" => {
+          "sailor" => { "name" => "sailor", "description" => "description", "hitpoints" => 10, "location" => "beach" },
+        },
+      }
+      Configuration.new.parse_dict(c)
     end
   end
 
   def test_empty_config
-    assert_raises RuntimeError do
+    assert_raises MissingItemsError do
       Configuration.new.parse_dict({})
     end
   end
 
-  def test_empty_locations
-    assert_raises RuntimeError do
-      Configuration.new.parse_dict({ "locations" => {} })
-    end
-  end
-
   def test_empty_items
-    assert_raises RuntimeError do
+    assert_raises MissingItemsError do
       Configuration.new.parse_dict({ "items" => {} })
     end
   end
 
+  def test_empty_locations
+    assert_raises MissingLocationsError do
+      Configuration.new.parse_dict({
+        "items" => {
+          "item" => { "name" => "name", "description" => "description", "type" => "weapon", "damage" => 1 },
+        },
+        "locations" => {},
+      })
+    end
+  end
+
   def test_empty_npcs
-    assert_raises RuntimeError do
-      Configuration.new.parse_dict({ "npcs" => {} })
+    assert_raises MissingNpcsError do
+      Configuration.new.parse_dict({
+        "items" => {
+          "item" => { "name" => "name", "description" => "description", "type" => "weapon", "damage" => 1 },
+        },
+        "locations" => {
+          "beach" => { "name" => "name", "description" => "description" },
+        },
+        "npcs" => {},
+      })
     end
   end
 

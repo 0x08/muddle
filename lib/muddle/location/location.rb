@@ -6,5 +6,9 @@ class Location
     @destinations = destinations
   end
 
+  def to_s
+    @name
+  end
+
   attr_reader :id, :name, :description, :destinations
 end

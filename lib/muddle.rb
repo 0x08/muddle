@@ -1,12 +1,9 @@
 require_relative "muddle/configuration"
 require_relative "muddle/muddle_engine"
 
-require "log4r"
-require "log4r/yamlconfigurator"
+require "logger"
 
-Log4r::YamlConfigurator.load_yaml_file("/etc/muddle/log4r.yaml")
-
-logger = Log4r::Logger["muddle"]
+logger = Logger.new(STDOUT)
 
 logger.info("reading configuration")
 configuration = Configuration.new

@@ -1,21 +1,25 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    log4r (1.1.10)
+    debase (0.2.4.1)
+      debase-ruby_core_source (>= 0.10.2)
+    debase-ruby_core_source (0.10.11)
     minitest (5.11.3)
     psych (2.2.4)
     rake (13.0.1)
     ruby-debug-ide (0.7.0)
       rake (>= 0.8.1)
+    rufo (0.12.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  log4r
+  debase
   minitest
   psych (~> 2.2.1)
   ruby-debug-ide
+  rufo
 
 BUNDLED WITH
    2.1.4

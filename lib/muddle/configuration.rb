@@ -3,6 +3,7 @@ require "logger"
 require_relative "location/location"
 require_relative "item/weapon"
 require_relative "character/non_player_character"
+require_relative "error/error"
 
 class Configuration
   attr_reader :locations, :items, :npcs
@@ -11,13 +12,12 @@ class Configuration
     @locations = {}
     @items = {}
     @npcs = {}
-    @logger = Log4r::Logger["muddle"]
+    @logger = Logger.new(STDOUT)
   end
 
   def parse_dict(config)
-    @logger.debug("loading configuration: #{config}")
-    parse_locations(config["locations"])
     parse_items(config["items"])
+    parse_locations(config["locations"])
     parse_npcs(config["npcs"])
   end
 
@@ -35,7 +35,7 @@ class Configuration
 
   def parse_items(items)
     if items.nil? or items.length == 0
-      raise "items cannot be empty"
+      raise MissingItemsError.new("items cannot be empty")
     end
     items.each do |id, item|
       name = item["name"]
@@ -47,33 +47,52 @@ class Configuration
       else
         raise "unknown item type #{item["type"]}"
       end
+      @logger.info("configured item: #{i}")
       @items[id] = i
     end
+    @logger.info("configured #{@items.length} item(s)")
   end
 
   def parse_locations(locations)
     if locations.nil? or locations.length == 0
-      raise "locations cannot be empty"
+      raise MissingLocationsError.new("locations cannot be empty")
     end
     locations.each do |id, location|
       name = location["name"]
       description = location["description"]
-      to = location["to"]
+      if location.key?("to")
+        to = location["to"]
+      else
+        to = []
+      end
+      items = []
+      if location.key?("items")
+        target_items = location["items"]
+        target_items.each do |target_item|
+          if @items.key?(target_item)
+            items.push(@items[target_item].clone)
+          else
+            raise UnknownItemError.new("unknown item #{target_item} in location #{id}")
+          end
+        end
+      end
       l = Location.new(id, name, description, to)
+      @logger.info("configured location: #{l}")
       @locations[id] = l
     end
     @locations.each do |_, location|
       location.destinations.each do |destination|
         unless @locations.key?(destination)
-          raise "unknown destination #{destination}"
+          raise UnknownLocationError.new("unknown destination #{destination}")
         end
       end
     end
+    @logger.info("configured #{@locations.length} location(s)")
   end
 
   def parse_npcs(npcs)
     if npcs.nil? or npcs.length == 0
-      raise "npcs cannot be empty"
+      raise MissingNpcsError.new("npcs cannot be empty")
     end
     npcs.each do |id, npc|
       name = npc["name"]
@@ -87,7 +106,9 @@ class Configuration
         raise "unknown npc location #{npc["location"]}"
       end
       n = NonPlayerCharacter.new(id, name, description, hitpoints, location, self)
+      @logger.info("configured npc: #{n}")
       @npcs[id] = n
     end
+    @logger.info("configured #{@npcs.length} npc(s)")
   end
 end

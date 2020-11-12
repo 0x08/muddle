@@ -9,8 +9,12 @@ class NonPlayerCharacter < Character
     @description = description
     @hitpoints = hitpoints
     @location = location
-    @logger = Log4r::Logger["muddle"]
+    @logger = Logger.new(STDOUT)
     @configuration = configuration
+  end
+
+  def to_s
+    @name
   end
 
   def run
